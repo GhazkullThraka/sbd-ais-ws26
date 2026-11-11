@@ -2,6 +2,8 @@
 
 <details>
 <summary>Logs</summary>
+
+```bash
 [baseline] polling table readings for id > 52820 (Ctrl+C to stop)
 [baseline] read        0  backlog       0 rows  delay   0.0 s  missing      0  anomalies 0
 [baseline] read    1,245  backlog   1,515 rows  delay   2.7 s  missing     15  anomalies 0
@@ -239,6 +241,7 @@
 [baseline] ANOMALY M-029 seq=690 score=22.89
 [baseline] ANOMALY M-029 seq=691 score=22.89
 ^C[baseline] stopped: read 40,760 readings, last id 94,357, 15 readings missing, 213 anomalies
+```
 </details>
 
 ### Are the missing readings in the table? 
@@ -248,7 +251,7 @@ The gateways insert batches of 15 readings at a time and due to the short betwee
 The detector queries the database using SELECT ... WHERE id > last_id. Because it already saw higher IDs being immediately committed and updated its last_id, it permanently skips the lower IDs of the delayed transaction when they finally commit.
 
 ### Watch the detector's lines while the plant runs: what happens to delay, backlog and missing, and why?
-delay and backlog grow continuously ntinously while the plant is active. The plant generates 600 readings per second, but since the model takes 3 ms to score a single reading, a single detector can process a maximum of about 333 readings/s. The detector cannot process data fast enough and falls further behind every second casuing the backlog to grow.
+delay and backlog grow continuously ntinously while the plant is active. The plant generates 600 readings per second, but since the model takes 3 ms to score a single reading, a single detector can process a maximum of about 333 readings/s. The detector cannot process data fast enough and falls further behind every second casuing the backlog to grow. By the time the detector finally processed reading seq=479 and found the first anomaly for M-029, the delay was nearly 60 seconds. Because the single polling loop takes 3 ms per reading, it can't keep up with 600 readings/s.
 
 ## Part B
 ### 1. Better Postgres Polling
